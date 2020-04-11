@@ -22,8 +22,8 @@ from datetime import datetime, timedelta
 
 import LowCostDP3T
 
-if __name__ == "__main__":
 
+def main():
 	# Mock time starts midnight on April 01.
 	epotime = datetime.timestamp(datetime.strptime("2020-04-01", "%Y-%m-%d"))
 	
@@ -97,3 +97,7 @@ if __name__ == "__main__":
 	alice.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), datetime.utcfromtimestamp(epotime))
 	print("Bob: (at risk)")
 	bob.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), datetime.utcfromtimestamp(epotime))
+
+
+if __name__ == "__main__":
+	main()
