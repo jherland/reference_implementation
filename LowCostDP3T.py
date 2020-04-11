@@ -255,7 +255,7 @@ class ContactManager:
 				# Hash check of infected beacon in set of daily contacts
 				if inf_ephID in self.contacts[day]:
 					duration = self.contacts[day][inf_ephID]
-					print("At risk, observed {} on day -{} for {}".format(inf_ephID.hex(), day, duration))
+					yield inf_ephID.hex(), day, duration
 
 
 # Mock Application that ties contact manager and keystore together

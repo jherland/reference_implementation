@@ -63,6 +63,11 @@ class World:
 			now += epoch
 
 
+def report_exposure(exposure_tuples):
+	for ephID, day, duration in exposure_tuples:
+		print("At risk, observed {} on day -{} for {}".format(ephID, day, duration))
+
+
 def main():
 	# Mock time starts midnight on April 01.
 	world = World(date(2020, 4, 1))
@@ -121,17 +126,17 @@ def main():
 	# Check infectiousness
 	print("Check exposure of Alice and Bob.")
 	print("Alice: (not positive)")
-	alice.ctmgr.check_infected(
+	report_exposure(alice.ctmgr.check_infected(
 		infections_SK,
 		infectious_date.strftime("%Y-%m-%d"),
 		datetime.combine(world.today, time(0, 0, 0)),
-	)
+	))
 	print("Bob: (at risk)")
-	bob.ctmgr.check_infected(
+	report_exposure(bob.ctmgr.check_infected(
 		infections_SK,
 		infectious_date.strftime("%Y-%m-%d"),
 		datetime.combine(world.today, time(0, 0, 0)),
-	)
+	))
 
 
 if __name__ == "__main__":
