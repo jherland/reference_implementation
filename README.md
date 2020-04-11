@@ -40,9 +40,9 @@ The contact tracing and management is implemented in the class
 where they are added to local observations. Each epoch, these local
 observations are evaluated in `process_epoch` and contacts that have been
 around long enough (there was sufficient contact) are added to the daily
-observed contacts. The `check_infected` method takes an `SK` and date and
+observed contacts. The `check_exposure` method takes an `SK` and date and
 checks all local contacts if one of the `EphIDs` of that `SK` were observed
-and then issues a warning.
+and then generates warnings.
 
 
 ## Installation
@@ -54,6 +54,14 @@ install it, e.g., through `sudo apt install python3-pycryptodome` or
 Note that for `pip`, there is a difference between `pycryptodome` and
 `pycryptodomex` as they install different subsets of the library API
 functionality.
+
+You can run everything in a virtualenv, in which case these commands should
+be enough to get everything set up:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
 
 
 ## Example run
