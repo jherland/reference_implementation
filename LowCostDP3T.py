@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 __copyright__ = """
 	Copyright 2020 EPFL
 
