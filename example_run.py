@@ -24,7 +24,7 @@ import LowCostDP3T
 
 def main():
 	# Mock time starts midnight on April 01.
-	epotime = datetime.timestamp(datetime.strptime("2020-04-01", "%Y-%m-%d"))
+	epotime = datetime(2020, 4, 1)
 	
 	# We have three people: Alice, Bob, and Isidor
 	alice = LowCostDP3T.MockApp()
@@ -34,7 +34,7 @@ def main():
 	# Run tests for the specified number of days
 	for day in range(2):
 		print("Day: Alice, Bob, and Isidor do not have contact.")
-		epotime += 24*60*60
+		epotime += timedelta(days=1)
 		alice.next_day()
 		bob.next_day()
 		isidor.next_day()
@@ -42,10 +42,10 @@ def main():
 	for day in range(3):
 		print("Day: Alice and Bob work in the same office, Isidor elsewhere.")
 		for hour in range(8, 17):
-			time = epotime + hour*60*60
+			time = epotime.replace(hour=hour)
 			# We break each hour into epochs
 			for epoch in range(60//LowCostDP3T.EPOCH_LENGTH):
-				now = datetime.utcfromtimestamp(epotime)
+				now = epotime
 				alice_ephID = alice.keystore.get_current_ephID(now)
 				bob_ephID = bob.keystore.get_current_ephID(now)
 				# Record two beacons in the same epoch, resulting in a contact
@@ -58,7 +58,7 @@ def main():
 				alice.next_epoch()
 				bob.next_epoch()
 		# Tik Tok
-		epotime += 24*60*60
+		epotime += timedelta(days=1)
 		alice.next_day()
 		bob.next_day()
 		isidor.next_day()        
@@ -66,7 +66,7 @@ def main():
 	print("Day: Bob and Isidor meet for dinner.")
 	for hour in range(17, 20):
 		for epoch in range(60//LowCostDP3T.EPOCH_LENGTH):
-			now = datetime.utcfromtimestamp(epotime)
+			now = epotime.replace(hour=hour)
 			bob_ephID = bob.keystore.get_current_ephID(now)
 			isidor_ephID = isidor.keystore.get_current_ephID(now)
 			# Record two beacons in the same epoch, resulting in a contact
@@ -81,11 +81,11 @@ def main():
 			isidor.next_epoch()
 
 	print("Isidor is tested positive.")
-	infectious_date = datetime.utcfromtimestamp(epotime)
+	infectious_date = epotime
 	infections_SK = isidor.keystore.SKt[0]
 
 	# Tik Tok
-	epotime += 24*60*60
+	epotime += timedelta(days=1)
 	alice.next_day()
 	bob.next_day()
 	isidor.next_day()
@@ -93,9 +93,9 @@ def main():
 	# Check infectiousness
 	print("Check exposure of Alice and Bob.")
 	print("Alice: (not positive)")
-	alice.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), datetime.utcfromtimestamp(epotime))
+	alice.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), epotime)
 	print("Bob: (at risk)")
-	bob.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), datetime.utcfromtimestamp(epotime))
+	bob.ctmgr.check_infected(infections_SK, infectious_date.strftime("%Y-%m-%d"), epotime)
 
 
 if __name__ == "__main__":
