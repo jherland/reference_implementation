@@ -17,7 +17,6 @@ __copyright__ = """
 """
 __license__ = "Apache 2.0"
 
-import time
 from datetime import datetime, timedelta
 
 import LowCostDP3T
