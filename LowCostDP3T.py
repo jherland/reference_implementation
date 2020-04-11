@@ -22,7 +22,7 @@ import hashlib
 import hmac
 import secrets
 import random
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 
 # Fixed global default broadcast key for ephID generation.
 BROADCAST_KEY = "Broadcast key"
@@ -219,9 +219,9 @@ class ContactManager:
 		self.observations = {}
 
 
-	# Update infected and local risk scoring
+	# Update exposure and local risk scoring
 	########################################
-	def check_infected(self, inf_SK0, date, now = None):
+	def check_exposure(self, inf_SK0, infect_date, now = None):
 		''' Checks if our database was exposed to an infected SK starting on date.
 
 			NOTE: this implementation uses the date of the SK_t to reduce the
@@ -231,14 +231,16 @@ class ContactManager:
 			database of contact records. This implementation assumes we are
 			given a date of infection and checks on a per-day basis.
 
-			Arguments
-				infSK0(b[]): SK_t of infected
-				date(str): date of SK_t (i.e., the t in the form 2020-04-23).
-				now(datetime): current date for mock testing.
+			Arguments:
+				inf_SK0(b[]): SK_t of infected
+				infect_date(date): date of SK_t (i.e. the t as a date object).
+				now(date): current date for mock testing.
+
+			Yields:
+				(EphID, day, duration) tuples for each exposure to infection
 		'''
 		if now is None:
-			now = datetime.now(timezone.utc)
-		infect_date = datetime.strptime(date, "%Y-%m-%d")
+			now = date.today()
 		days_infected = (now-infect_date).days
 		inf_SK = inf_SK0
 		for day in range(days_infected, -1, -1):

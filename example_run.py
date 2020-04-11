@@ -126,17 +126,10 @@ def main():
 	# Check infectiousness
 	print("Check exposure of Alice and Bob.")
 	print("Alice: (not positive)")
-	report_exposure(alice.ctmgr.check_infected(
-		infections_SK,
-		infectious_date.strftime("%Y-%m-%d"),
-		datetime.combine(world.today, time(0, 0, 0)),
-	))
+	report_exposure(alice.ctmgr.check_exposure(infections_SK, infectious_date, world.today))
+
 	print("Bob: (at risk)")
-	report_exposure(bob.ctmgr.check_infected(
-		infections_SK,
-		infectious_date.strftime("%Y-%m-%d"),
-		datetime.combine(world.today, time(0, 0, 0)),
-	))
+	report_exposure(bob.ctmgr.check_exposure(infections_SK, infectious_date, world.today))
 
 
 if __name__ == "__main__":
