@@ -17,9 +17,36 @@ __copyright__ = """
 """
 __license__ = "Apache 2.0"
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 import LowCostDP3T
+
+
+def epochs(
+	start=datetime.combine(date.today(), time.min),
+	end=datetime.combine(date.today(), time.max),
+):
+	''' Return datetime objects for each epoch between `start` and `end`.
+
+	For example, assuming each epoch is 15 minutes long, calling epochs() with
+	start = datetime.fromisoformat("2020-04-01 08:00") and
+	end = datetime.fromisoformat("2020-04-01 10:00") will yield these objects:
+		datetime(2020, 4, 1, 8, 0, 0)
+		datetime(2020, 4, 1, 8, 15, 0)
+		datetime(2020, 4, 1, 8, 30, 0)
+		datetime(2020, 4, 1, 8, 45, 0)
+		datetime(2020, 4, 1, 9, 0, 0)
+		datetime(2020, 4, 1, 9, 15, 0)
+		datetime(2020, 4, 1, 9, 30, 0)
+		datetime(2020, 4, 1, 9, 45, 0)
+
+	If `start` and/or `end` are not given they default to the start (0:00)
+	and end (23:59) of today, respectively.
+	'''
+	epoch = timedelta(minutes=LowCostDP3T.EPOCH_LENGTH)
+	while start < end:
+		yield start
+		start += epoch
 
 
 def main():
@@ -41,22 +68,19 @@ def main():
 
 	for day in range(3):
 		print("Day: Alice and Bob work in the same office, Isidor elsewhere.")
-		for hour in range(8, 17):
-			time = epotime.replace(hour=hour)
-			# We break each hour into epochs
-			for epoch in range(60//LowCostDP3T.EPOCH_LENGTH):
-				now = epotime
-				alice_ephID = alice.keystore.get_current_ephID(now)
-				bob_ephID = bob.keystore.get_current_ephID(now)
-				# Record two beacons in the same epoch, resulting in a contact
-				alice.ctmgr.receive_scans([bob_ephID], now = now)
-				bob.ctmgr.receive_scans([alice_ephID], now = now)
-				now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
-				alice.ctmgr.receive_scans([bob_ephID], now = now)
-				bob.ctmgr.receive_scans([alice_ephID], now = now)
-				# Process the received beacons
-				alice.next_epoch()
-				bob.next_epoch()
+		# For each epoch between 08:00 and 17:00
+		for now in epochs(epotime.replace(hour=8), epotime.replace(hour=17)):
+			alice_ephID = alice.keystore.get_current_ephID(now)
+			bob_ephID = bob.keystore.get_current_ephID(now)
+			# Record two beacons in the same epoch, resulting in a contact
+			alice.ctmgr.receive_scans([bob_ephID], now = now)
+			bob.ctmgr.receive_scans([alice_ephID], now = now)
+			now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
+			alice.ctmgr.receive_scans([bob_ephID], now = now)
+			bob.ctmgr.receive_scans([alice_ephID], now = now)
+			# Process the received beacons
+			alice.next_epoch()
+			bob.next_epoch()
 		# Tik Tok
 		epotime += timedelta(days=1)
 		alice.next_day()
@@ -64,21 +88,19 @@ def main():
 		isidor.next_day()        
 
 	print("Day: Bob and Isidor meet for dinner.")
-	for hour in range(17, 20):
-		for epoch in range(60//LowCostDP3T.EPOCH_LENGTH):
-			now = epotime.replace(hour=hour)
-			bob_ephID = bob.keystore.get_current_ephID(now)
-			isidor_ephID = isidor.keystore.get_current_ephID(now)
-			# Record two beacons in the same epoch, resulting in a contact
-			bob.ctmgr.receive_scans([isidor_ephID], now = now)
-			isidor.ctmgr.receive_scans([bob_ephID], now = now)
-			now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
-			bob.ctmgr.receive_scans([isidor_ephID], now = now)
-			isidor.ctmgr.receive_scans([bob_ephID], now = now)
-			# Process the received beacons
-			alice.next_epoch()
-			bob.next_epoch()
-			isidor.next_epoch()
+	for now in epochs(epotime.replace(hour=17), epotime.replace(hour=20)):
+		bob_ephID = bob.keystore.get_current_ephID(now)
+		isidor_ephID = isidor.keystore.get_current_ephID(now)
+		# Record two beacons in the same epoch, resulting in a contact
+		bob.ctmgr.receive_scans([isidor_ephID], now = now)
+		isidor.ctmgr.receive_scans([bob_ephID], now = now)
+		now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
+		bob.ctmgr.receive_scans([isidor_ephID], now = now)
+		isidor.ctmgr.receive_scans([bob_ephID], now = now)
+		# Process the received beacons
+		alice.next_epoch()
+		bob.next_epoch()
+		isidor.next_epoch()
 
 	print("Isidor is tested positive.")
 	infectious_date = epotime
