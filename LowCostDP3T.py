@@ -18,6 +18,7 @@ __license__ = "Apache 2.0"
 
 import hashlib
 import hmac
+import math
 import random
 import secrets
 from datetime import date, datetime, timedelta, timezone
@@ -28,17 +29,17 @@ from Cryptodome.Util import Counter
 # Fixed global default broadcast key for ephID generation.
 BROADCAST_KEY = "Broadcast key"
 
-# Length of an epoch (in minutes).
-EPOCH_LENGTH = 15
+# Length of an epoch.
+EPOCH_LENGTH = timedelta(minutes=15)
 
 # Number of epochs per day.
-NUM_EPOCHS_PER_DAY = 24*60//EPOCH_LENGTH
+NUM_EPOCHS_PER_DAY = math.ceil(timedelta(days=1) / EPOCH_LENGTH)
 
-# Duration key and contact history is kept (in days).
-RETENTION_PERIOD = 14
+# Duration key and contact history is kept.
+RETENTION_PERIOD = timedelta(days=14)
 
-# Min number of observation seconds for a contact
-CONTACT_THRESHOLD = 120
+# Min length of observation to register contact
+CONTACT_THRESHOLD = timedelta(seconds=120)
 
 
 # Local key management and storage
@@ -82,7 +83,7 @@ class KeyStore:
 		SK_t1 = KeyStore.get_SKt1(self.SKt[0])
 		self.SKt.insert(0, SK_t1)
 		# truncate list to max days
-		while len(self.SKt) > RETENTION_PERIOD:
+		while len(self.SKt) > RETENTION_PERIOD.days:
 			self.SKt.pop()
 
 	@staticmethod
@@ -195,7 +196,7 @@ class ContactManager:
 		'''
 		self.contacts.insert(0, {})
 		# truncate history
-		while len(self.contacts) > RETENTION_PERIOD:
+		while len(self.contacts) > RETENTION_PERIOD.days:
 			self.contacts.pop()
 
 	def process_epoch(self):
@@ -215,7 +216,7 @@ class ContactManager:
 			#       adding some statistical modeling across all timestamps.
 			if len(self.observations[beacon]) >= 2:
 				duration = self.observations[beacon][-1] - self.observations[beacon][0]
-				if duration > CONTACT_THRESHOLD:
+				if duration > CONTACT_THRESHOLD.total_seconds():
 					self.contacts[0][beacon] = duration
 		self.observations = {}
 

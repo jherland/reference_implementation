@@ -55,12 +55,11 @@ class World:
 		If `start` and/or `end` are not given they default to the start (0:00)
 		and end (23:59) of the day, respectively.
 		'''
-		epoch = timedelta(minutes=LowCostDP3T.EPOCH_LENGTH)
 		now = datetime.combine(self.today, start)
 		end = datetime.combine(self.today, end)
 		while now < end:
 			yield now
-			now += epoch
+			now += LowCostDP3T.EPOCH_LENGTH
 
 
 def report_exposure(exposure_tuples):
@@ -91,7 +90,7 @@ def main():
 			# Record two beacons in the same epoch, resulting in a contact
 			alice.ctmgr.receive_scans([bob_ephID], now = now)
 			bob.ctmgr.receive_scans([alice_ephID], now = now)
-			now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
+			now += LowCostDP3T.CONTACT_THRESHOLD + timedelta(seconds=1)
 			alice.ctmgr.receive_scans([bob_ephID], now = now)
 			bob.ctmgr.receive_scans([alice_ephID], now = now)
 			# Process the received beacons
@@ -108,7 +107,7 @@ def main():
 		# Record two beacons in the same epoch, resulting in a contact
 		bob.ctmgr.receive_scans([isidor_ephID], now = now)
 		isidor.ctmgr.receive_scans([bob_ephID], now = now)
-		now = now + timedelta(seconds=LowCostDP3T.CONTACT_THRESHOLD+1)
+		now += LowCostDP3T.CONTACT_THRESHOLD + timedelta(seconds=1)
 		bob.ctmgr.receive_scans([isidor_ephID], now = now)
 		isidor.ctmgr.receive_scans([bob_ephID], now = now)
 		# Process the received beacons
