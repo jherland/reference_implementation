@@ -121,9 +121,7 @@ class KeyStore:
 			Executed once per day, at 0:00 UTC
 		'''
 		ephIDs = self.create_ephIDs(self.SKt[0])
-		# TODO: random.shuffle is not cryptographically secure!
-		#       The real app will use a cryptographic secure shuffle
-		random.shuffle(ephIDs)
+		random.shuffle(ephIDs, secrets.SystemRandom().random)
 		self.ephIDs = ephIDs
 
 	def get_epoch(self, now):
