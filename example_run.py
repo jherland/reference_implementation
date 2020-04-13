@@ -22,7 +22,10 @@ from datetime import date, datetime, time, timedelta
 import LowCostDP3T
 
 
-class World:
+class Simulation:
+	''' Simulate apps/people interacting over a period of time.
+	'''
+
 	def __init__(self, start_date):
 		self.today = start_date
 		self.people = []
@@ -31,7 +34,7 @@ class World:
 		self.people.extend(people)
 
 	def next_day(self):
-		''' Add 24h to world clock and advance all people to the next day.
+		''' Fast-forward the simulation and all people in it to the next day.
 		'''
 		self.today += timedelta(days=1)
 		for p in self.people:
@@ -61,6 +64,31 @@ class World:
 			yield now
 			now += LowCostDP3T.EPOCH_LENGTH
 
+	def share_ephIDs(self, people, ephIDs, now):
+		''' Broadcast each person's EphID to the other people in the group.
+
+		Each item in the given list of EphIDs is assumed to originate from
+		the corresponding person in the given list of people.
+		'''
+		assert len(people) == len(ephIDs)
+		for p, own_ephID in zip(people, ephIDs):
+			incoming = [e for e in ephIDs if e != own_ephID]
+			p.ctmgr.receive_scans(incoming, now=now)
+
+	def meeting(self, start, end, people):
+		''' Simulate people meeting over a given time period.
+		'''
+		assert people
+		for now in self.epochs(start, end):
+			ephIDs = [p.keystore.get_current_ephID(now) for p in people]
+			# Record two beacons in the same epoch, resulting in a contact
+			self.share_ephIDs(people, ephIDs, now)
+			now += LowCostDP3T.CONTACT_THRESHOLD + timedelta(seconds=1)
+			self.share_ephIDs(people, ephIDs, now)
+			# Process the received beacons
+			for p in people:
+				p.next_epoch()
+
 
 def report_exposure(exposure_tuples):
 	for ephID, day, duration in exposure_tuples:
@@ -69,66 +97,43 @@ def report_exposure(exposure_tuples):
 
 def main():
 	# Mock time starts midnight on April 01.
-	world = World(date(2020, 4, 1))
+	sim = Simulation(date(2020, 4, 1))
 	
 	# We have three people: Alice, Bob, and Isidor
 	alice = LowCostDP3T.MockApp()
 	bob = LowCostDP3T.MockApp()
 	isidor = LowCostDP3T.MockApp()
-	world.add_people(alice, bob, isidor)
+	sim.add_people(alice, bob, isidor)
 
 	# Run tests for the specified number of days
 	for day in range(2):
 		print("Day: Alice, Bob, and Isidor do not have contact.")
-		world.next_day()
+		sim.next_day()
 
 	for day in range(3):
 		print("Day: Alice and Bob work in the same office, Isidor elsewhere.")
-		for now in world.epochs(start=time(8, 0, 0), end=time(17, 0, 0)):
-			alice_ephID = alice.keystore.get_current_ephID(now)
-			bob_ephID = bob.keystore.get_current_ephID(now)
-			# Record two beacons in the same epoch, resulting in a contact
-			alice.ctmgr.receive_scans([bob_ephID], now = now)
-			bob.ctmgr.receive_scans([alice_ephID], now = now)
-			now += LowCostDP3T.CONTACT_THRESHOLD + timedelta(seconds=1)
-			alice.ctmgr.receive_scans([bob_ephID], now = now)
-			bob.ctmgr.receive_scans([alice_ephID], now = now)
-			# Process the received beacons
-			alice.next_epoch()
-			bob.next_epoch()
+		sim.meeting(time(8, 0, 0), time(17, 0, 0), [alice, bob])
 		# Tik Tok
-		world.next_day()
+		sim.next_day()
 
 
 	print("Day: Bob and Isidor meet for dinner.")
-	for now in world.epochs(start=time(17, 0, 0), end=time(20, 0, 0)):
-		bob_ephID = bob.keystore.get_current_ephID(now)
-		isidor_ephID = isidor.keystore.get_current_ephID(now)
-		# Record two beacons in the same epoch, resulting in a contact
-		bob.ctmgr.receive_scans([isidor_ephID], now = now)
-		isidor.ctmgr.receive_scans([bob_ephID], now = now)
-		now += LowCostDP3T.CONTACT_THRESHOLD + timedelta(seconds=1)
-		bob.ctmgr.receive_scans([isidor_ephID], now = now)
-		isidor.ctmgr.receive_scans([bob_ephID], now = now)
-		# Process the received beacons
-		alice.next_epoch()
-		bob.next_epoch()
-		isidor.next_epoch()
+	sim.meeting(time(17, 0, 0), time(20, 0, 0), [bob, isidor])
 
 	print("Isidor is tested positive.")
-	infectious_date = world.today
+	infectious_date = sim.today
 	infections_SK = isidor.keystore.SKt[0]
 
 	# Tik Tok
-	world.next_day()
+	sim.next_day()
 
 	# Check infectiousness
 	print("Check exposure of Alice and Bob.")
 	print("Alice: (not positive)")
-	report_exposure(alice.ctmgr.check_exposure(infections_SK, infectious_date, world.today))
+	report_exposure(alice.ctmgr.check_exposure(infections_SK, infectious_date, sim.today))
 
 	print("Bob: (at risk)")
-	report_exposure(bob.ctmgr.check_exposure(infections_SK, infectious_date, world.today))
+	report_exposure(bob.ctmgr.check_exposure(infections_SK, infectious_date, sim.today))
 
 
 if __name__ == "__main__":
