@@ -13,6 +13,9 @@ pkgs.mkShell {
     git
     python36
     python36Packages.venvShellHook
+    python37
+    python38
+    python39
   ];
   postShellHook = ''
     unset SOURCE_DATE_EPOCH
