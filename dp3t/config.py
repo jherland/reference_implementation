@@ -19,18 +19,19 @@ __copyright__ = """
 """
 __license__ = "Apache 2.0"
 
+from datetime import timedelta
 
-#: For how many days we should store keys and observations
-RETENTION_PERIOD = 21
+#: How long we should store keys and observations
+RETENTION_PERIOD = timedelta(days=21)
 
-#: The length of an epoch in minutes
-EPOCH_LENGTH = 15
+#: The length of an epoch
+EPOCH_LENGTH = timedelta(minutes=15)
 
 #: Number of epochs in a day
-NUM_EPOCHS_PER_DAY = 1440 // EPOCH_LENGTH
+NUM_EPOCHS_PER_DAY = timedelta(days=1) // EPOCH_LENGTH
 
 #: Length of EphID in bytes
 LENGTH_EPHID = 16
 
 #: Seconds in a UNIX Epoch day
-SECONDS_PER_DAY = 24 * 60 * 60
+SECONDS_PER_DAY = timedelta(days=1) // timedelta(seconds=1)

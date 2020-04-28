@@ -152,7 +152,7 @@ def test_contact_tracing_retention():
     ct.add_observation(EPHID2, t2)
     recorded_times = ct.observations.keys()
 
-    for _ in range(config.RETENTION_PERIOD + 1):
+    for _ in range(config.RETENTION_PERIOD // timedelta(days=1) + 1):
         ct.next_day()
 
     for time in recorded_times:

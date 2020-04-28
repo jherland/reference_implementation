@@ -49,7 +49,7 @@ def epoch_from_time(time):
     Args:
         time (:obj:`datetime`): A date-time instance
     """
-    return int(time.timestamp() // (EPOCH_LENGTH * 60))
+    return int(time.timestamp() // EPOCH_LENGTH.total_seconds())
 
 
 #########################################
@@ -221,13 +221,13 @@ class ContactTracer:
         self._create_new_day_ephids()
 
         # Remove old observations
-        last_retained_day = self.today - datetime.timedelta(days=RETENTION_PERIOD)
+        last_retained_day = self.today - RETENTION_PERIOD
         old_days = [day for day in self.observations_per_day if day < last_retained_day]
         for day in old_days:
             del self.observations_per_day[day]
 
         # Remove old seeds and ephids
-        days_back = datetime.timedelta(days=RETENTION_PERIOD)
+        days_back = RETENTION_PERIOD
         last_valid_time = self.start_of_today - days_back
         last_retained_epoch = epoch_from_time(last_valid_time)
 

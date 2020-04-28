@@ -216,12 +216,14 @@ def test_contact_tracing_no_contact_outside_retention_window(protocol):
     assert alice.matches_with_batch(batch) == 1
 
     # Advance beyond the retention time
-    for _ in range(config.RETENTION_PERIOD + 1):
+    for _ in range(config.RETENTION_PERIOD // timedelta(days=1) + 1):
         alice.next_day()
         bob.next_day()
 
     # Verify that Alice does not detect the interaction because it is too old
-    end_of_retention = end_of_today + timedelta(days=config.RETENTION_PERIOD + 1)
+    end_of_retention = end_of_today + timedelta(
+        days=config.RETENTION_PERIOD // timedelta(days=1) + 1
+    )
     release_time = int(end_of_retention.timestamp())
     batch = protocol.TracingDataBatch([tracing_info_bob], release_time=release_time)
     assert alice.matches_with_batch(batch) == 0

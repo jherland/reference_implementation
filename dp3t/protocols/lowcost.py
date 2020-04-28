@@ -19,7 +19,7 @@ __copyright__ = """
 """
 __license__ = "Apache 2.0"
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import hmac
 import secrets
@@ -255,7 +255,7 @@ class ContactTracer:
 
         # Keep a list of the past RETENTION_PERIOD keys
         self.past_keys.insert(0, self.current_day_key)
-        self.past_keys = self.past_keys[:RETENTION_PERIOD]
+        self.past_keys = self.past_keys[: RETENTION_PERIOD // timedelta(days=1)]
 
         # Update the day key
         self.current_day_key = next_day_key(self.current_day_key)
@@ -267,7 +267,7 @@ class ContactTracer:
         self.start_of_today = self.start_of_today + SECONDS_PER_DAY
 
         # Remove old observations
-        last_retained = self.start_of_today - RETENTION_PERIOD * SECONDS_PER_DAY
+        last_retained = self.start_of_today - int(RETENTION_PERIOD.total_seconds())
         delete_times = [time for time in self.observations if time < last_retained]
         for time in delete_times:
             del self.observations[time]
@@ -287,7 +287,7 @@ class ContactTracer:
             raise ValueError("Requested EphID not availavle. Did you call next_day()?")
 
         # Compute the corresponding epoch within the day
-        epoch = (int(time.timestamp()) - day_start) // (EPOCH_LENGTH * 60)
+        epoch = (int(time.timestamp()) - day_start) // int(EPOCH_LENGTH.total_seconds())
 
         return self.current_ephids[epoch]
 
