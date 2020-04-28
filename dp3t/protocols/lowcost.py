@@ -42,7 +42,7 @@ from dp3t.config import (
 #################################
 
 #: Constant string "broadcast key" for domain seperation
-BROADCAST_KEY = "broadcast key".encode("ascii")
+BROADCAST_KEY = b"broadcast key"
 
 #: Length of a batch (2 hours)
 SECONDS_PER_BATCH = 2 * 60 * 60
