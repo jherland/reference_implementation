@@ -19,7 +19,7 @@ __copyright__ = """
 """
 __license__ = "Apache 2.0"
 
-import datetime
+from datetime import datetime
 import hashlib
 import hmac
 import secrets
@@ -57,7 +57,7 @@ def day_start_from_time(time):
     """Return the first Unix epoch second of the day corresponding to time
 
     Args:
-        datetime (obj:datetime.datetime): A datetime
+        time (obj:datetime): A datetime
 
     Returns:
         The first Unix epoch second on that day
@@ -69,7 +69,7 @@ def batch_start_from_time(time):
     """Return the first Unix epoch second of the batch corresponding to time
 
     Args:
-        datetime (obj:datetime.datetime): A datetime
+        time (obj:datetime): A datetime
 
     Returns:
         The first Unix epoch second on that day
@@ -171,7 +171,7 @@ class TracingDataBatch:
             ValueError: if the release_time is not aligned to a batch boundary
         """
         if release_time is None:
-            release_time = batch_start_from_time(datetime.datetime.now())
+            release_time = batch_start_from_time(datetime.now())
 
         if release_time % SECONDS_PER_BATCH != 0:
             raise ValueError("Release time must be batch-aligned")
@@ -202,7 +202,7 @@ class ContactTracer:
        86400 seconds)
      * Batches are aligned at batch boundaries (e.g., multiples of SECONDS_PER_BATCH)
 
-    All external facing interfaces use datetime.datetime objects instead.
+    All external facing interfaces use datetime objects instead.
     """
 
     @staticmethod
@@ -232,7 +232,7 @@ class ContactTracer:
         """Initialize a new contact tracer
 
         Args:
-            start_time (:obj:`datetime.datetime`, optional): The current time
+            start_time (:obj:`datetime`, optional): The current time
                 The default value is the current time.
         """
         self.past_keys = []
@@ -241,7 +241,7 @@ class ContactTracer:
         self.observations = {}
 
         if start_time is None:
-            start_time = datetime.datetime.now()
+            start_time = datetime.now()
         self.start_of_today = day_start_from_time(start_time)
 
         # Generate initial day key
@@ -276,7 +276,7 @@ class ContactTracer:
         """Return the EphID corresponding to the requested time
 
         Args:
-            time (:obj:`datetime.datetime`): The requested time
+            time (:obj:`datetime`): The requested time
 
         Raises:
             ValueError: If the requested ephid is unavailable
@@ -304,7 +304,7 @@ class ContactTracer:
 
         Args:
             ephID (byte array): the observed ephID
-            time (:obj:`datatime.datetime`): time of observation
+            time (:obj:`datetime`): time of observation
 
         Raises:
             ValueError: If time does not correspond to the current day
@@ -336,11 +336,11 @@ class ContactTracer:
          this protocol, and the value will be ignored.
 
         Args:
-            first_contagious_time (:obj:`datetime.datetime`): The time from which we
+            first_contagious_time (:obj:`datetime`): The time from which we
                  should start tracing
-            last_contagious_time (:obj:`datetime.datetime`, optional): This value is
+            last_contagious_time (:obj:`datetime`, optional): This value is
                  IGNORED. It is here to present a compatible interface
-            reset_key_after_release (:obj:`datetime.datetime`, optional):
+            reset_key_after_release (:obj:`datetime`, optional):
                  Whether to pick a new key. Default is True to preserve privacy of
                  future beacons.
 
